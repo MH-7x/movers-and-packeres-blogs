@@ -125,10 +125,11 @@ export async function GET(req: NextRequest) {
     }
 
     const skip = (page - 1) * limit;
+
     const blogs = await blogsModel
       .find(query)
       .populate("category", "name")
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .select("-content -author -seo  -__v")
       .skip(skip)
       .limit(limit);
