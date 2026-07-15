@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { SectionCards } from "@/components/section-cards";
 import React from "react";
 import dbConnect from "@/lib/DBConnect";

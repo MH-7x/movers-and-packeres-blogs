@@ -127,7 +127,9 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
         FeaturedImage: image,
         content: blogContent,
         status: values.status,
-        scheduledFor: values.status === "scheduled" ? values.scheduledFor : undefined,
+        scheduledFor: values.status === "scheduled" && values.scheduledFor
+          ? new Date(values.scheduledFor).toISOString()
+          : undefined,
         isUpdate: Boolean(blog),
         id: blog?._id,
       });
