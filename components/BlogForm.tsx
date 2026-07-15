@@ -17,28 +17,43 @@ import {
   CloudinaryUploadWidgetInfo,
 } from "next-cloudinary";
 
-const blogSchema = z.object({
-  title: z
-    .string()
-    .min(30, { message: "Title must be at least 30 characters long" }),
-  caption: z
-    .string()
-    .min(80, { message: "please write a descriptive caption!" }),
-  seo: z.object({
-    metaTitle: z
+const blogSchema = z
+  .object({
+    title: z
       .string()
-      .min(30, { message: "Title must be at least 10 characters long" }),
-    metaDescription: z
+      .min(30, { message: "Title must be at least 30 characters long" }),
+    caption: z
       .string()
       .min(80, { message: "please write a descriptive caption!" }),
-  }),
-  category: z.string({
-    message: "Please select a category",
-  }),
-  slug: z.string().min(20, "provide detail slug!"),
-});
+    seo: z.object({
+      metaTitle: z
+        .string()
+        .min(30, { message: "Title must be at least 10 characters long" }),
+      metaDescription: z
+        .string()
+        .min(80, { message: "please write a descriptive caption!" }),
+    }),
+    category: z.string({
+      message: "Please select a category",
+    }),
+    slug: z.string().min(20, "provide detail slug!"),
+    status: z.enum(["published", "scheduled"]),
+    scheduledFor: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.status === "scheduled") {
+        return !!data.scheduledFor;
+      }
+      return true;
+    },
+    {
+      message: "Please select a date and time for the scheduled post",
+      path: ["scheduledFor"],
+    },
+  );
 
-import { Loader2, Plus, UploadCloud } from "lucide-react";
+import { CalendarClock, Loader2, Plus, UploadCloud } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Button } from "./ui/button";
@@ -46,6 +61,15 @@ import { toast } from "sonner";
 import createBlog, { category } from "@/lib/CreateBlog";
 import { useRouter } from "next/navigation";
 import { BlogResponse } from "@/app/dashboard/edit/[id]/page";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
 const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
   const router = useRouter();
   const [image, setImage] = useState<string | null>(
@@ -63,6 +87,14 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categories, setCategories] = useState<category[] | []>([]);
 
+  const formatDateForInput = (date: string | Date | undefined) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const offset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - offset * 60 * 1000);
+    return local.toISOString().slice(0, 16);
+  };
+
   const form = useForm<z.infer<typeof blogSchema>>({
     resolver: zodResolver(blogSchema),
     defaultValues: {
@@ -74,6 +106,8 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
       },
       category: blog?.category || "",
       slug: blog?.slug || "",
+      status: (blog?.status as "published" | "scheduled") || "published",
+      scheduledFor: formatDateForInput(blog?.scheduledFor) || "",
     },
   });
   async function onSubmit(values: z.infer<typeof blogSchema>) {
@@ -92,6 +126,8 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
         ...values,
         FeaturedImage: image,
         content: blogContent,
+        status: values.status,
+        scheduledFor: values.status === "scheduled" ? values.scheduledFor : undefined,
         isUpdate: Boolean(blog),
         id: blog?._id,
       });
@@ -200,15 +236,67 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
               defaultSelected={blog?.category}
             />
 
+            <div className="mt-5 space-y-3 rounded-lg border p-4 bg-background">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Publish Status</Label>
+                <Select
+                  value={form.watch("status")}
+                  onValueChange={(val: "published" | "scheduled") => {
+                    form.setValue("status", val);
+                    if (val === "published") {
+                      form.setValue("scheduledFor", "");
+                      form.clearErrors("scheduledFor");
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select publish status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="published">Publish Now</SelectItem>
+                    <SelectItem value="scheduled">Schedule for Later</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {form.watch("status") === "scheduled" && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <CalendarClock className="h-4 w-4" />
+                    Schedule Date & Time
+                  </Label>
+                  <Input
+                    type="datetime-local"
+                    className="bg-white"
+                    min={new Date().toISOString().slice(0, 16)}
+                    value={form.watch("scheduledFor") || ""}
+                    onChange={(e) => {
+                      form.setValue("scheduledFor", e.target.value);
+                      form.clearErrors("scheduledFor");
+                    }}
+                  />
+                  {form.formState.errors.scheduledFor && (
+                    <p className="text-sm text-destructive">
+                      {form.formState.errors.scheduledFor.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <Button
               disabled={loading}
               type="submit"
-              className="mt-5 w-full"
+              className="mt-4 w-full"
               size={"lg"}
             >
               {loading ? (
                 <>
                   Submitting <Loader2 className="animate-spin" />
+                </>
+              ) : form.watch("status") === "scheduled" ? (
+                <>
+                  Schedule Post <CalendarClock className="ml-1 h-4 w-4" />
                 </>
               ) : (
                 <>

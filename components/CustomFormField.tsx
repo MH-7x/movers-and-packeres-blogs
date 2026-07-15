@@ -30,7 +30,7 @@ interface CustomFormFieldProps {
       };
       slug: string;
       category: string;
-      status?: string;
+      status: "published" | "scheduled";
       scheduledFor?: string;
     },
     undefined

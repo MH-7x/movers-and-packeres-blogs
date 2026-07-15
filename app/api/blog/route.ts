@@ -12,6 +12,8 @@ export interface blogData {
   FeaturedImage: string;
   content: string;
   slug: string;
+  status?: "published" | "scheduled";
+  scheduledFor?: string | null;
   author: {
     name: string;
     avatarUrl: string;
@@ -38,7 +40,15 @@ export async function POST(req: NextRequest) {
   try {
     await dbConnect();
 
-    const newBlog = new blogsModel(data);
+    const blogData = {
+      ...data,
+      status: data.status || "published",
+      scheduledFor: data.status === "scheduled" && data.scheduledFor
+        ? new Date(data.scheduledFor)
+        : null,
+    };
+
+    const newBlog = new blogsModel(blogData);
     await newBlog.save();
     return NextResponse.json({
       success: true,
@@ -85,6 +95,7 @@ export async function GET(req: NextRequest) {
         .find({
           ...query,
           category: isValidCategory._id,
+          status: { $ne: "scheduled" },
         })
         .populate("category", "name")
         .select("-__v -content -author -seo");
@@ -121,6 +132,7 @@ export async function GET(req: NextRequest) {
         .findOne({
           ...query,
           slug,
+          status: { $ne: "scheduled" },
         })
         .populate("category", "name")
         .select("-slug  -__v");
@@ -140,15 +152,17 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
+    const publicQuery = { ...query, status: { $ne: "scheduled" } };
+
     const blogs = await blogsModel
-      .find(query)
+      .find(publicQuery)
       .populate("category", "name")
       .sort({ createdAt: -1 })
       .select("-content -author -seo  -__v")
       .skip(skip)
       .limit(limit);
 
-    const totalBlogs = await blogsModel.countDocuments(query);
+    const totalBlogs = await blogsModel.countDocuments(publicQuery);
 
     return NextResponse.json({
       success: true,
@@ -230,6 +244,10 @@ export async function PUT(req: NextRequest) {
         category: data.category,
         content: data.content,
         FeaturedImage: data.FeaturedImage,
+        status: data.status || "published",
+        scheduledFor: data.status === "scheduled" && data.scheduledFor
+          ? new Date(data.scheduledFor)
+          : null,
       },
       {
         new: true,

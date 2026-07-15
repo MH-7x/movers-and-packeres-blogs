@@ -23,12 +23,14 @@ export async function GET() {
       },
       {
         $project: {
-          _id: 1, // Blog ID
-          title: 1, // Blog Title
-          caption: 1, // Blog Caption
+          _id: 1,
+          title: 1,
+          caption: 1,
           slug: 1,
-          image: "$FeaturedImage", // Rename FeaturedImage to image
-          category: { $ifNull: ["$categoryData.name", "Uncategorized"] }, // Category Name
+          image: "$FeaturedImage",
+          category: { $ifNull: ["$categoryData.name", "Uncategorized"] },
+          status: { $ifNull: ["$status", "published"] },
+          scheduledFor: 1,
           createdAt: 1,
         },
       },

@@ -20,6 +20,8 @@ export default async function createBlog(data: {
     metaDescription: string;
   };
   category: string;
+  status?: string;
+  scheduledFor?: string;
   isUpdate?: boolean;
   id?: string;
 }) {

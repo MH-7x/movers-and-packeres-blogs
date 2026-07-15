@@ -6,7 +6,9 @@ export interface IBlog extends Document {
   category: ObjectId;
   FeaturedImage: string;
   content: string;
-  slug : string;
+  slug: string;
+  status: "published" | "scheduled";
+  scheduledFor: Date | null;
   author: {
     name: string;
     avatarUrl: string;
@@ -15,7 +17,6 @@ export interface IBlog extends Document {
     metaTitle: string;
     metaDescription: string;
   };
-  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,6 +70,15 @@ const blogSchema = new Schema<IBlog>(
         type: String,
         required: [true, "Please provide a meta description"],
       },
+    },
+    status: {
+      type: String,
+      enum: ["published", "scheduled"],
+      default: "published",
+    },
+    scheduledFor: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
