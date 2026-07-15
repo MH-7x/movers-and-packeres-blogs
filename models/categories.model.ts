@@ -22,6 +22,6 @@ const categorySchema = new Schema<ICategory>({
     type: String,
     required: [true, "Please provide an image url"],
   },
-});
+}, { timestamps: true });
 
 export default models.Category || model<ICategory>("Category", categorySchema);

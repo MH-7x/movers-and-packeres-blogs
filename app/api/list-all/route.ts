@@ -5,6 +5,7 @@ import Blog from "@/models/blogs.model";
 export async function GET() {
   try {
     await dbConnect();
+
     const blogs = await Blog.aggregate([
       {
         $lookup: {

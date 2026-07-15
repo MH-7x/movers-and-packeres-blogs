@@ -1,6 +1,8 @@
 "use server";
 
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { headers } from "next/headers";
 export interface category {
   _id: string;
   name: string;
@@ -21,7 +23,8 @@ export default async function createBlog(data: {
   isUpdate?: boolean;
   id?: string;
 }) {
-  const serverSession = await getServerSession();
+  const serverSession = await getServerSession(authOptions);
+  if (!serverSession) return { success: false, message: "Unauthorized" };
 
   const fullData = {
     ...data,
@@ -32,10 +35,14 @@ export default async function createBlog(data: {
   };
 
   try {
+    const headersList = await headers();
+    const cookie = headersList.get("cookie");
+
     const response = await fetch(`${process.env.PUBLIC_URL}/api/blog`, {
       method: data.isUpdate ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(cookie ? { Cookie: cookie } : {}),
       },
       body: data.isUpdate
         ? JSON.stringify({ ...fullData, id: data.id })

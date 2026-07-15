@@ -19,7 +19,7 @@ const CategoryAction = ({ category }: { category: Category }) => {
   const handleDelete = async (id: string) => {
     setLoading(true);
     try {
-      const response = await fetch("/api/categoy", {
+      const response = await fetch("/api/category", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

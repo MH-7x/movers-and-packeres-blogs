@@ -87,6 +87,7 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
 
     try {
       setLoading(true);
+
       const { message, success } = await createBlog({
         ...values,
         FeaturedImage: image,
@@ -100,6 +101,7 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
         router.push("/dashboard");
       } else {
         toast.error(message);
+        console.error(message);
       }
     } catch (error) {
       toast.error("An error occurred while submitting the blog.");
@@ -112,7 +114,7 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
   const getCategories = async () => {
     try {
       setCategoriesLoading(true);
-      const response = await fetch("/api/categoy");
+      const response = await fetch("/api/category");
       if (!response.ok)
         throw new Error("Failed to load categories " + response.statusText);
       const results = await response.json();
@@ -197,6 +199,7 @@ const BlogForm = ({ blog }: { blog?: BlogResponse }) => {
               categories={categories && categories.length > 0 ? categories : []}
               defaultSelected={blog?.category}
             />
+
             <Button
               disabled={loading}
               type="submit"

@@ -7,7 +7,7 @@ const adminEmails = [
   "itsmashal2006@gmail.com",
 ];
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_AUTH_CLIENT_ID as string,

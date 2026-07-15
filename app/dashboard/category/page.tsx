@@ -5,7 +5,7 @@ import { DataTable } from "../list-blog/data-table";
 async function getData(): Promise<{ data: Category[] } | { error: string }> {
   try {
     const response = await fetch(
-      `${process.env.PUBLIC_URL}/api/categoy?forTable=true`,
+      `${process.env.PUBLIC_URL}/api/category?forTable=true`,
       {
         cache: "no-store",
       }

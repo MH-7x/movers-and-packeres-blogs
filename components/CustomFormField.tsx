@@ -30,6 +30,8 @@ interface CustomFormFieldProps {
       };
       slug: string;
       category: string;
+      status?: string;
+      scheduledFor?: string;
     },
     undefined
   >;
@@ -46,6 +48,7 @@ interface CustomFormFieldProps {
   categories?: category[] | [];
   loading?: boolean;
   defaultSelected?: string;
+  options?: { value: string; label: string }[];
 }
 
 const CustomFormField = ({
@@ -69,13 +72,7 @@ const CustomFormField = ({
         <FormItem className="my-3">
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            {type !== "select" ? (
-              type === "text" ? (
-                <Input className="bg-white" {...field} />
-              ) : (
-                <Textarea className="bg-white" {...field} />
-              )
-            ) : (
+            {type === "select" ? (
               <Select
                 disabled={loading}
                 onValueChange={field.onChange}
@@ -96,6 +93,10 @@ const CustomFormField = ({
                     ))}
                 </SelectContent>
               </Select>
+            ) : type === "textarea" ? (
+              <Textarea className="bg-white" {...field} />
+            ) : (
+              <Input type="text" className="bg-white" {...field} />
             )}
           </FormControl>
           <FormDescription>{description}</FormDescription>

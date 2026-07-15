@@ -70,10 +70,13 @@ const blogSchema = new Schema<IBlog>(
         required: [true, "Please provide a meta description"],
       },
     },
-   
   },
   { timestamps: true }
 );
 
+// Delete the existing model to ensure the schema updates in Next.js HMR
+if (models.Blog) {
+  delete models.Blog;
+}
 
-export default models.Blog || model<IBlog>("Blog", blogSchema);
+export default model<IBlog>("Blog", blogSchema);

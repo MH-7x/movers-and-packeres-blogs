@@ -1,15 +1,24 @@
 "use server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { headers } from "next/headers";
 export default async function CreateCategory(data: {
   name: string;
   description: string;
   imageUrl: string;
   id?: string;
 }) {
+  const serverSession = await getServerSession(authOptions);
+  if (!serverSession) return { success: false, message: "Unauthorized" };
   try {
-    const response = await fetch(`${process.env.PUBLIC_URL}/api/categoy`, {
+    const headersList = await headers();
+    const cookie = headersList.get("cookie");
+
+    const response = await fetch(`${process.env.PUBLIC_URL}/api/category`, {
       method: data.id ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(cookie ? { Cookie: cookie } : {}),
       },
       body: JSON.stringify({ ...data }),
     });

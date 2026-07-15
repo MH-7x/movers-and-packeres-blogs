@@ -11,6 +11,8 @@ export interface BlogResponse {
   FeaturedImage: string;
   content: string;
   slug: string;
+  status?: string;
+  scheduledFor?: string | Date;
 }
 
 export interface SEO {
@@ -48,7 +50,7 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     <section className=" p-5">
       <h1 className="text-primary font-bold text-2xl">Edit Blog Details</h1>
       <p className="max-w-3xl text-muted-foreground mt-3 text-base/4.3">
-        your are allows to update and modify the blogs title, category, featured
+        You are allowed to update and modify the blog's title, category, featured
         image, content, and other essential information. Ensure your blog stays
         relevant and accurate by making necessary changes easily.
       </p>

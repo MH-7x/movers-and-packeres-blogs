@@ -1,8 +1,12 @@
 import dbConnect from "@/lib/DBConnect";
 import categoriesModel, { ICategory } from "@/models/categories.model";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   const category: ICategory = await req.json();
 
   try {
@@ -83,6 +87,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   console.log("hit delete api");
   const { id } = await req.json();
   if (!id)
@@ -110,6 +116,8 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   const data = await req.json();
   try {
     await dbConnect();

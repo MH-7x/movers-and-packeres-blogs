@@ -2,6 +2,8 @@ import dbConnect from "@/lib/DBConnect";
 import blogsModel from "@/models/blogs.model";
 import categoriesModel from "@/models/categories.model";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export interface blogData {
   title: string;
@@ -21,12 +23,21 @@ export interface blogData {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  console.log("session", session);
+
+  if (!session)
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
+    );
   const data: blogData = await req.json();
 
   //zod validation TODO
 
   try {
     await dbConnect();
+
     const newBlog = new blogsModel(data);
     await newBlog.save();
     return NextResponse.json({
@@ -58,6 +69,7 @@ export async function GET(req: NextRequest) {
 
   try {
     await dbConnect();
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: any = {};
 
@@ -71,6 +83,7 @@ export async function GET(req: NextRequest) {
       }
       const blogsByCategory = await blogsModel
         .find({
+          ...query,
           category: isValidCategory._id,
         })
         .populate("category", "name")
@@ -106,6 +119,7 @@ export async function GET(req: NextRequest) {
     if (slug) {
       const blog = await blogsModel
         .findOne({
+          ...query,
           slug,
         })
         .populate("category", "name")
@@ -160,6 +174,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session)
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
+    );
+
   const { id } = await req.json();
   if (!id)
     return NextResponse.json({
@@ -187,6 +208,12 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session)
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
+    );
   const data = await req.json();
 
   try {
@@ -209,7 +236,7 @@ export async function PUT(req: NextRequest) {
       },
     );
     return NextResponse.json({
-      message: "category updated successfully",
+      message: "blog updated successfully",
       success: true,
     });
   } catch (error) {
@@ -219,7 +246,7 @@ export async function PUT(req: NextRequest) {
         error instanceof Error
           ? error.message
           : "failed to update -server error",
-      success: true,
+      success: false,
     });
   }
 }

@@ -15,7 +15,7 @@ const getData = async (
   if (!id) throw new Error("No id received ");
   try {
     const response = await fetch(
-      `${process.env.PUBLIC_URL}/api/categoy?id=${id}`
+      `${process.env.PUBLIC_URL}/api/category?id=${id}`
     );
     if (!response.ok)
       throw new Error(
@@ -41,11 +41,11 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <section className=" p-5">
-      <h1 className="text-primary font-bold text-2xl">Edit Blog Details</h1>
+      <h1 className="text-primary font-bold text-2xl">Edit Category Details</h1>
       <p className="max-w-3xl text-muted-foreground mt-3 text-base/4.3">
-        your are allows to update and modify the blogs title, category, featured
-        image, content, and other essential information. Ensure your blog stays
-        relevant and accurate by making necessary changes easily.
+        You are allowed to update and modify the category's name, description,
+        and image. Ensure your category stays relevant and accurate by making
+        necessary changes easily.
       </p>
       {"data" in results ? (
         <CategoryForm category={results.data} />
